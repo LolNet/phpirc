@@ -1,0 +1,56 @@
+#!/usr/bin/env php
+<?php
+if(PHP_SAPI !== 'cli') {
+	print("Be wise, use command line\n");
+	exit;
+}
+
+set_include_path(get_include_path() . PATH_SEPARATOR
+	. __DIR__ . '/lib/' . PATH_SEPARATOR
+);
+
+spl_autoload_register(function($class_name) {
+    require(str_replace('_', '/', $class_name) . '.class.php');
+});
+
+error_reporting(E_ALL);
+define('PHPIRC_VERSION', '0.4');
+printf("
+       _           _
+ _ __ | |__  _ __ (_)_ __ ___
+| '_ \| '_ \| '_ \| | '__/ __|
+| |_) | | | | |_) | | | | (__
+| .__/|_| |_| .__/|_|_|  \___|
+|_|         |_|           v%s
+
+", PHPIRC_VERSION);
+
+
+@include('config.php');
+if(!isset($config)) {
+	print("Config missing, read the README\n");
+	exit(1);
+}
+
+
+while(true) {
+	$irc = new phpirc($config);
+	$tick = 10000;
+	while(True) {
+		try {
+			if($irc->process()) {
+				$tick = 10000;
+			}
+		} catch(Exception $e) {
+			printf("ERR: IRC connector process exception: %s\n", $e->getMessage());
+			break;
+		}
+
+		usleep($tick);
+		if($tick < 500000) {
+			$tick += 10000;
+		}
+	}
+	printf("Unexpected crash D: Reconnecting in 10 sec\n");
+	sleep(10);
+}
