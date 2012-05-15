@@ -26,7 +26,8 @@ abstract class module {
 		$this->event = new event($this);
 		$this->timer = new timer($this);
 
-		$module_name = array_pop(explode('_', get_class($this), 2));
+		$module_name = explode('_', get_class($this), 2);
+		$module_name = array_pop($module_name);
 		if(isset($this->parent->config['module'][$module_name])) {
 			$this->config = $this->parent->config['module'][$module_name];
 		} else {
