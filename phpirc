@@ -5,6 +5,13 @@ if(PHP_SAPI !== 'cli') {
 	exit;
 }
 
+$options_short = "";
+$options_long = array(
+	"config:",
+);
+$options = getopt($options_short, $options_long);
+var_dump($options);
+
 set_include_path(get_include_path() . PATH_SEPARATOR
 	. __DIR__ . '/src/' . PATH_SEPARATOR
 	. __DIR__ . '/lib/' . PATH_SEPARATOR
@@ -27,12 +34,11 @@ printf("
 ", PHPIRC_VERSION);
 
 
-@include('config.php');
+@include(!empty($options['config']) ? $options['config'] : 'config.php');
 if(!isset($config)) {
 	print("Config missing, read the README\n");
 	exit(1);
 }
-
 
 while(true) {
 	$irc = new phpirc($config);
