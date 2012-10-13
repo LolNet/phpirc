@@ -19,5 +19,13 @@ $config = array(
 		'ping'				=> TRUE,
 		'nickchange'		=> TRUE,
 		'autojoin'			=> array('#phpirc'),
+		'minecraft_hawkeye'	=> array(
+			'channel'			=> '#server-monitor',
+			'db'				=> array(
+				'dsn'				=> 'mysql:host=localhost;dbname=bukkit',
+				'user'				=> 'bukkit',
+				'pass'				=> 'bukkit',
+			),
+		),
 	),
 );
