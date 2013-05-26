@@ -1,7 +1,7 @@
 phpirc
 ======
 
-What is is
+What it is
 ----------
 phpirc is a basic modular irc bot written in php.
 
