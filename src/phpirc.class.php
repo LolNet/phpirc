@@ -9,8 +9,8 @@ class phpirc {
 	private $sock;
 	public $config;
 
-	private $buffer = []
-	private $modules = []
+	private $buffer = [];
+	private $modules = [];
 
 	/**
 	 * Create instance of phpirc
