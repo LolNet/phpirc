@@ -9,6 +9,14 @@ class module_github extends module {
 	private $socket;
 
 	public function init() {
+		// Merge default and user config
+		$this->config = array_merge([
+			'ip'					=> '0.0.0.0',	// Listen on given interface
+			'port'					=> '8080',		// Listen on given port
+			'max_push_messages'		=> 5,			// Max messages per push
+			'channel'				=> '#spam',
+		], $this->config);
+
 		$this->socket = $this->setup_socket();
 		$this->timer(1, [$this, 'tick']);
 	}
@@ -23,7 +31,7 @@ class module_github extends module {
 			throw new Exception("Unable to create socket");
 		}
 
-		if (!socket_bind($socket, '0.0.0.0', 8081)) {
+		if (!socket_bind($socket, $this->config['ip'], $this->config['port'])) {
 			throw new Exception("Unable to bind socket");
 		}
 
@@ -48,15 +56,36 @@ class module_github extends module {
 			return;
 		}
 
-		$msg = sprintf("[GIT] %d commits pushed to %s [%s]"
+		$msg = sprintf("[GIT] %s pushed %d commits to %s [%s]"
+			, $payload->pusher->name
 			, count($payload->commits)
 			, $payload->repository->name
 			, $payload->compare
 		);
-
 		$this->parent()->send(irc::PRIVMSG("#hackers", $msg));
+
+		$count = 0;
+		foreach ($payload->commits as $commit) {
+			$msg = sprintf("[GIT] %s -%s [%s]"
+				, explode("\n", $commit->message)[0]
+				, $commit->author->username
+				, $commit->url
+			);
+
+			$this->parent()->send(irc::PRIVMSG($this->config['channel'], $msg));
+
+			// Break on max push messages
+			if ($count++ >= $this->config['max_push_messages']) {
+				break;
+			}
+		}
 	}
 
+	/**
+	 * Handle client socket
+	 *
+	 * @param $client				Client socket
+	 */
 	private function handle_client($client) {
 		// Check for socket presence
 		if (!$client) {
@@ -106,14 +135,15 @@ class module_github extends module {
 			, $payload
 		);
 
-		list($key,$payload) = explode('=', $payload, 2);
-
-		if (trim($key) != 'payload') {
-			printf("GIT: Expected key to be payload, was'%s'\n", $key);
-		}
-
 		// Clean up
 		socket_close($client);
+
+
+		// Get payload
+		list($key,$payload) = explode('=', $payload, 2);
+		if (trim($key) != 'payload') {
+			printf("GIT: Expected key to be payload, got '%s'\n", $key);
+		}
 
 		// Return payload
 		return json_decode(urldecode($payload));
