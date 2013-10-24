@@ -228,7 +228,8 @@ final class irc {
 	}
 
 	public static function PRIVMSG($msgtarget, $message) {
-		$args = array_splice(func_get_args(), 2);
+		$args = func_get_args();
+		$args = array_splice($args, 2);
 		return sprintf('PRIVMSG %s :%s', $msgtarget, vsprintf($message, $args));
 	}
 
