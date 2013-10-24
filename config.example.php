@@ -5,19 +5,27 @@
  * @author Gussi <gussi@gussi.is>
  */
 
-$config = array(
-	'server'			=> array(
+$config = [
+	/**
+	 * Common server info
+	 */
+	'server'			=> [
 		'host'				=> 'irc.lolnet.is',
 		'port'				=> '6667',
-		'nick'				=> 'phpirc',
+		'nick'				=> 'phpirc_' . uniqid(),
 		'user'				=> 'phpirc',
 		'real'				=> 'lolnet.is',
 		'echo'				=> TRUE,
-	),
+	],
 
-	'module'			=> array(
+	/**
+	 * Module config
+	 */
+	'module'			=> [
 		'ping'				=> TRUE,
 		'nickchange'		=> TRUE,
-		'autojoin'			=> array('#phpirc'),
-	),
-);
+		'autojoin'			=> [
+			'#phpirc',
+		],
+	],
+];

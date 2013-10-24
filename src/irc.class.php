@@ -166,15 +166,15 @@ final class irc {
 	const COLOR_STOP = 0xF;
 
 	public static function COLOR($foreground = NULL, $background = NULL) {
-		if($foreground == self::COLOR_BOLD) {
+		if ($foreground == self::COLOR_BOLD) {
 			return sprintf("%s", chr(self::COLOR_BOLD));
 		}
 
-		if(is_null($foreground) && is_null($background)) {
+		if (is_null($foreground) && is_null($background)) {
 			return sprintf("%s", chr(self::COLOR_STOP));
 		}
 
-		if(is_null($background)) {
+		if (is_null($background)) {
 			return sprintf("%s%02s", chr(self::COLOR_START), $foreground);
 		} else {
 			return sprintf("%s%02s,%02s", chr(self::COLOR_START), $foreground, $background);
@@ -194,34 +194,34 @@ final class irc {
 	}
 
 	public static function PONG($server) {
-		if(is_array($server)) {
+		if (is_array($server)) {
 			$server = implode(' ', $server);
 		}
 		return sprintf('PONG %s', $server);
 	}
 
 	public static function JOIN($channel, $key = '') {
-		if(is_array($channel)) {
+		if (is_array($channel)) {
 			$channel = implode(',', $channel);
 		}
-		if(is_array($key)) {
+		if (is_array($key)) {
 			$key = implode(',', $key);
 		}
 		return sprintf('JOIN %s %s', $channel, $key);
 	}
 
 	public static function PART($channel, $message = '') {
-		if(is_array($channel)) {
+		if (is_array($channel)) {
 			$channel = implode(',', $channel);
 		}
 		return sprintf('PART %s :%s', $channel, $message);
 	}
 
 	public static function MODE($channel, $modes, $modeparam) {
-		if(is_array($modes)) {
+		if (is_array($modes)) {
 			$modes = implode('', $modes);
 		}
-		if(is_array($modeparam)) {
+		if (is_array($modeparam)) {
 			$modeparam = implode(' ', $modeparam);
 		}
 		return sprintf('MODE %s %s %s', $channel, $modes, $modeparam);
@@ -237,7 +237,7 @@ final class irc {
 		list($nick, $rest) = explode('!', substr($from, 1), 2);
 		list($user, $host) = explode('@', $rest, 2);
 		$message = trim(substr($message, 1));
-		return array(
+		return [
 			'nick'		=> $nick,
 			'user'		=> $user,
 			'host'		=> $host,
@@ -246,25 +246,25 @@ final class irc {
 			'reply'		=> (substr($to, 0, 1) == '#')
 				? $to
 				: $nick
-		);
+		];
 	}
 
 	public static function parse_fantasy($data) {
 		$msg = self::parse_privmsg($data);
-		if(substr($msg['msg'], 0, 1) != '!') {
-			return array();
+		if (substr($msg['msg'], 0, 1) != '!') {
+			return [];
 		}
 
-		if(strstr($msg['msg'], ' ') !== FALSE) {
+		if (strstr($msg['msg'], ' ') !== FALSE) {
 			list($cmd, $args) = explode(' ', $msg['msg'], 2);
 		} else {
 			$cmd = $msg['msg'];
 			$args = '';
 		}
 
-		return array_merge($msg, array(
+		return array_merge($msg, [
 			'cmd'		=> substr($cmd, 1),
 			'args'		=> $args,
-		));
+		]);
 	}
 }

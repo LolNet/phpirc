@@ -7,21 +7,20 @@
 
 class module_autojoin extends module {
 	public function init() {
-		$module = $this;
 		// Wait for RPL_WELCOME from IRC server
-		$this->event(irc::RPL_WELCOME, function($data) use ($module) {
+		$this->event(irc::RPL_WELCOME, function($data) {
 			// Wait 1 second (hardcore NickServ might be in action) then join
-			$module->timer(1, array($module, 'join'), timer::TIMER_ONCE);
+			$this->timer(1, [$this, 'join'], timer::TIMER_ONCE);
 			return event::UNREGISTER;
 		});
 	}
 
 	public function join() {
-		if(!empty($this->config)) {
-			if(is_array($this->config)) {
+		if (!empty($this->config)) {
+			if (is_array($this->config)) {
 				$channels = $this->config;
 			} else {
-				$channels = array($this->config);
+				$channels = [$this->config];
 			}
 			$this->parent()->send(irc::JOIN($channels));
 		} else{

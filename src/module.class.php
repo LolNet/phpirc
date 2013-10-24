@@ -17,7 +17,7 @@ abstract class module {
 	 * @param phpirc $parent				Parent instance
 	 */
 	public function __construct(phpirc $parent) {
-		if(!is_null($parent->module(get_class($this)))) {
+		if (!is_null($parent->module(get_class($this)))) {
 			printf("ERR: Module '%s' already loaded\n", get_class($this));
 			return FALSE;
 		}
@@ -28,10 +28,10 @@ abstract class module {
 
 		$module_name = explode('_', get_class($this), 2);
 		$module_name = array_pop($module_name);
-		if(isset($this->parent->config['module'][$module_name])) {
+		if (isset($this->parent->config['module'][$module_name])) {
 			$this->config = $this->parent->config['module'][$module_name];
 		} else {
-			$this->config = array();
+			$this->config = [];
 		}
 
 		printf("INFO: Module '%s' loaded\n", get_class($this));
@@ -64,8 +64,8 @@ abstract class module {
 	 * @param string $data						Data recieved
 	 */
 	final public function process($data = NULL) {
-		if(!is_null($data)) {
-			if($data[0] == ':') {
+		if (!is_null($data)) {
+			if ($data[0] == ':') {
 				list($prefix, $cmd, $j) = explode(' ', $data, 3);
 			} else {
 				list($cmd, $rest) = explode(' ', $data, 2);

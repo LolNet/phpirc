@@ -9,8 +9,8 @@ class phpirc {
 	private $sock;
 	public $config;
 
-	private $buffer = array();
-	private $modules = array();
+	private $buffer = []
+	private $modules = []
 
 	/**
 	 * Create instance of phpirc
@@ -28,8 +28,8 @@ class phpirc {
 		printf("INFO: phpirc started\n");
 		$this->config = $config;
 
-		foreach($config['module'] as $module_name => $conf) {
-			if($conf === FALSE) {
+		foreach ($config['module'] as $module_name => $conf) {
+			if ($conf === FALSE) {
 				continue;
 			}
 			$this->module_register($module_name);
@@ -37,7 +37,7 @@ class phpirc {
 
 		$this->sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 		socket_connect($this->sock, $config['server']['host'], $config['server']['port']);
-		if(!empty($this->config['server']['pass'])) {
+		if (!empty($this->config['server']['pass'])) {
 			$this->_send_data(irc::PASS($config['server']['pass']));
 		}
 		$this->send(irc::NICK($config['server']['nick']));
@@ -46,19 +46,19 @@ class phpirc {
 	}
 
 	public function process() {
-		if($data = $this->recv_data()) {
-			if(isset($this->config['server']['echo']) && $this->config['server']['echo'] === TRUE) {
+		if ($data = $this->recv_data()) {
+			if (isset($this->config['server']['echo']) && $this->config['server']['echo'] === TRUE) {
 				printf("RECV: %s\n", $data);
 			}
 
-			foreach($this->modules as $module) {
+			foreach ($this->modules as $module) {
 				$module->process($data);
 			}
 
 			return TRUE;
 		}
 
-		foreach($this->modules as $module) {
+		foreach ($this->modules as $module) {
 			$module->process($data);
 		}
 
@@ -66,29 +66,29 @@ class phpirc {
 	}
 
 	private function recv_data() {
-		if(count($this->buffer) > 0) {
+		if (count($this->buffer) > 0) {
 			return array_shift($this->buffer);
 		}
 		$buffer = '';
 		do {
 			$chunk = socket_read($this->sock, 8192);
-			if($chunk === false) {
+			if ($chunk === false) {
 				$error = socket_last_error($this->sock);
-				if($error != 11 && $error != 115) {
+				if ($error != 11 && $error != 115 && $error != 35) {
 					throw new Exception(printf("ERR: Disconnected (errno %s)\n", $error));
 					return FALSE;
 				}
 				break;
-			} elseif($chunk == '') {
+			} elseif ($chunk == '') {
 				throw new Exception(printf("ERR: Disconnected (errno %s)\n", $error));
 				return FALSE;
 				break;
 			} else {
 				$buffer .= $chunk;
 			}
-		} while(true);
-		foreach(explode("\r\n", $buffer) as $msg) {
-			if(!empty($msg)) {
+		} while (true);
+		foreach (explode("\r\n", $buffer) as $msg) {
+			if (!empty($msg)) {
 				$this->buffer[] = $msg;
 			}
 		}
@@ -105,10 +105,10 @@ class phpirc {
 	 * @param string $data					Data to be sent
 	 */
 	public function send($data) {
-		if(strstr($data, "\r\n") !== FALSE) {
+		if (strstr($data, "\r\n") !== FALSE) {
 			return;
 		}
-		if($this->config['server']['echo']) {
+		if ($this->config['server']['echo']) {
 			printf("SEND: %s\n", $data);
 		}
 		$this->_send_data($data);
@@ -125,7 +125,7 @@ class phpirc {
 	 * @return module						Module instance, NULL on failure
 	 */
 	public function module($module_name) {
-		if(isset($this->modules[$module_name])) {
+		if (isset($this->modules[$module_name])) {
 			return $this->modules[$module_name];
 		}
 	}
@@ -137,15 +137,15 @@ class phpirc {
 	 * @return bool							TRUE on success, else FALSE
 	 */
 	public function module_register($module_name) {
-		if(isset($this->modules[$module_name])) {
+		if (isset($this->modules[$module_name])) {
 			return FALSE;
 		}
 		$class_name = "module_" . $module_name;
-		if(!class_exists($class_name)) {
+		if (!class_exists($class_name)) {
 			return FALSE;
 		}
 		$module = new $class_name($this);
-		if($module->init() === FALSE) {
+		if ($module->init() === FALSE) {
 			return FALSE;
 		}
 		$this->modules[$module_name] = $module;
@@ -159,7 +159,7 @@ class phpirc {
 	 * @return bool							TRUE on success, else FALSE
 	 */
 	public function module_unregister($module_name) {
-		if(!isset($this->modules[$module_name])) {
+		if (!isset($this->modules[$module_name])) {
 			return FALSE;
 		}
 		$this->modules[$module_name]->clean();

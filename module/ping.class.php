@@ -7,10 +7,9 @@
 
 class module_ping extends module {
 	public function init() {
-		$module = $this;
-		$this->event('PING', function($data) use($module) {
+		$this->event('PING', function($data) {
 			list($cmd, $server) = explode(' ', $data);
-			$module->parent()->send(irc::PONG(substr($server, 1)));
+			$this->parent()->send(irc::PONG(substr($server, 1)));
 		});
 	}
 }

@@ -15,11 +15,11 @@ class event {
 	 * @param string|closure callback		Callback to call when given event happens
 	 */
 	public function subscribe($event, $callback) {
-		if(!is_array($event)) {
+		if (!is_array($event)) {
 			$event = array($event);
 		}
-		foreach($event as $val) {
-			if(!isset($this->event[strval($val)])) {
+		foreach ($event as $val) {
+			if (!isset($this->event[strval($val)])) {
 				$this->event[strval($val)] = array();
 			}
 			$this->event[strval($val)][] = $callback;
@@ -33,15 +33,15 @@ class event {
 	 * @param string data					Data recieved
 	 */
 	public function notify($event, $data) {
-		if(!isset($this->event[strval($event)])) {
+		if (!isset($this->event[strval($event)])) {
 			return;
 		}
-		foreach($this->event[strval($event)] as &$callback) {
+		foreach ($this->event[strval($event)] as &$callback) {
 			$ret = call_user_func($callback, trim($data));
-			switch($ret) {
+			switch ($ret) {
 				case self::UNREGISTER:
 					unset($callback);
-					if(count($this->event[strval($event)]) == 0) {
+					if (count($this->event[strval($event)]) == 0) {
 						unset($this->event[strval($event)]);
 					}
 					break;

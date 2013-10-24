@@ -6,7 +6,7 @@
  */
 
 class timer {
-	private $timers = array();
+	private $timers = [];
 
 	const TIMER_INTERVAL = 0x01;
 	const TIMER_ONCE = 0x02;
@@ -21,15 +21,15 @@ class timer {
 	 * @param int type						Timer type, see self::TIMER_* const, INTERVAL for default
 	 */
 	public function start($seconds, $callback, $type = self::TIMER_INTERVAL) {
-		if(!is_callable($callback) || !is_int($seconds)) {
+		if (!is_callable($callback) || !is_int($seconds)) {
 			return FALSE;
 		}
-		$this->timers[] = array(
+		$this->timers[] = [
 			'trigger'		=> time() + $seconds,
 			'callback'		=> $callback,
 			'type'			=> $type,
 			'seconds'		=> $seconds,
-		);
+		];
 		return TRUE;
 	}
 
@@ -37,13 +37,13 @@ class timer {
 	 * Check on timers, triggered passed timers
 	 */
 	public function tick() {
-		foreach($this->timers as $key => &$timer) {
-			if($timer['trigger'] < time()) {
+		foreach ($this->timers as $key => &$timer) {
+			if ($timer['trigger'] < time()) {
 				$ret = call_user_func($timer['callback']);
-				if($ret === self::UNREGISTER || $timer['type'] === self::TIMER_ONCE) {
+				if ($ret === self::UNREGISTER || $timer['type'] === self::TIMER_ONCE) {
 					unset($this->timers[$key]);
 				}
-				if($timer['type'] === self::TIMER_INTERVAL) {
+				if ($timer['type'] === self::TIMER_INTERVAL) {
 					$timer['trigger'] = time() + $timer['seconds'];
 				}
 			}
