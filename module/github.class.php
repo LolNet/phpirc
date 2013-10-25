@@ -14,7 +14,11 @@ class module_github extends module {
 			'ip'					=> '0.0.0.0',	// Listen on given interface
 			'port'					=> '8080',		// Listen on given port
 			'max_push_messages'		=> 5,			// Max messages per push
-			'channel'				=> '#spam',
+			'repository'			=> [
+				'_default'				=> [
+					'channel'				=> '#spam',
+				],
+			],
 		], $this->config);
 
 		$this->socket = $this->setup_socket();
@@ -56,13 +60,17 @@ class module_github extends module {
 			return;
 		}
 
+		$config = isset($this->config['repositories'][$payload->repository->name])
+			? $this->config['repositories'][$payload->repository->name]
+			: $this->config['repositories']['_default'];
+
 		$msg = sprintf("[GIT] %s pushed %d commits to %s [%s]"
 			, $payload->pusher->name
 			, count($payload->commits)
 			, $payload->repository->name
 			, $payload->compare
 		);
-		$this->parent()->send(irc::PRIVMSG("#hackers", $msg));
+		$this->parent()->send(irc::PRIVMSG($config['channel'], $msg));
 
 		$count = 0;
 		foreach ($payload->commits as $commit) {
@@ -72,7 +80,7 @@ class module_github extends module {
 				, $commit->url
 			);
 
-			$this->parent()->send(irc::PRIVMSG($this->config['channel'], $msg));
+			$this->parent()->send(irc::PRIVMSG($config['channel'], $msg));
 
 			// Break on max push messages
 			if ($count++ >= $this->config['max_push_messages']) {
