@@ -45,7 +45,3 @@ class log {
 		];
 	}
 }
-
-$log = new log();
-
-$log->debug('what %s', 'heh');
