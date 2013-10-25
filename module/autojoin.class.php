@@ -24,7 +24,7 @@ class module_autojoin extends module {
 			}
 			$this->parent()->send(irc::JOIN($channels));
 		} else{
-			printf("ERR: [%s] No channel/s defined\n", get_class($this));
+			$this->log->error("No channel/s defined");
 		}
 	}
 }

@@ -2,22 +2,6 @@
 <?php
 error_reporting(E_ALL);
 
-if (PHP_SAPI != 'cli') {
-	print("Be wise, use command line\n");
-	exit(1);
-}
-
-if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50500) {
-	printf("Need PHP 5.5, current version is %s\n", PHP_VERSION);
-	exit(1);
-}
-
-$options_short = "";
-$options_long = array(
-	"config:",
-);
-$options = getopt($options_short, $options_long);
-
 set_include_path(get_include_path() . PATH_SEPARATOR
 	. __DIR__ . '/src/' . PATH_SEPARATOR
 	. __DIR__ . '/lib/' . PATH_SEPARATOR
@@ -27,7 +11,26 @@ spl_autoload_register(function($class_name) {
     require(str_replace('_', '/', $class_name) . '.class.php');
 });
 
-define('PHPIRC_VERSION', '0.5');
+$log = new log('main');
+
+
+if (PHP_SAPI != 'cli') {
+	$log->critical("Be wise, use command line");
+	exit(1);
+}
+
+if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50500) {
+	$log->critical("Need PHP 5.5, current version is %s", PHP_VERSION);
+	exit(1);
+}
+
+$options_short = "";
+$options_long = array(
+	"config:",
+);
+$options = getopt($options_short, $options_long);
+
+define('PHPIRC_VERSION', '0.6');
 printf("
        _           _
  _ __ | |__  _ __ (_)_ __ ___
@@ -40,7 +43,7 @@ printf("
 
 @include(!empty($options['config']) ? $options['config'] : 'config.php');
 if (!isset($config)) {
-	print("Config missing, read the README\n");
+	$log->critical("Config missing, read the README");
 	exit(1);
 }
 
@@ -53,10 +56,10 @@ while (TRUE) {
 		try {
 			$irc->process();
 		} catch (Exception $e) {
-			printf("ERR: IRC connector process exception: %s\n", $e->getMessage());
+			$log->error("ERR: IRC connector process exception: %s", $e->getMessage());
 			break;
 		}
 	}
-	printf("Unexpected crash D: Reconnecting in 10 sec\n");
+	$log->warning("Unexpected crash D: Reconnecting in 10 sec");
 	sleep(10);
 }

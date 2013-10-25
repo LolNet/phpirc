@@ -8,7 +8,7 @@
 class module_fortune extends module {
 	public function init() {
 		if (`which fortune` == NULL) {
-			printf("Fortune missing");
+			$this->log->error("Fortune missing");
 			return;
 		}
 

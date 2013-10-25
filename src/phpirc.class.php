@@ -7,6 +7,7 @@
 
 class phpirc {
 	private $sock;
+	private $log;
 	public $config;
 
 	private $buffer = [];
@@ -25,7 +26,8 @@ class phpirc {
 	 *	@li bool $echo							Echo all traffic
 	 */
 	public function __construct($config) {
-		printf("INFO: phpirc started\n");
+		$this->log = new log('phpirc');
+		$this->log->info("phpirc started");
 		$this->config = $config;
 
 		foreach ($config['module'] as $module_name => $conf) {
@@ -48,7 +50,7 @@ class phpirc {
 	public function process() {
 		if ($data = $this->recv_data()) {
 			if (isset($this->config['server']['echo']) && $this->config['server']['echo'] === TRUE) {
-				printf("RECV: %s\n", $data);
+				$this->log->debug("RECV : %s", $data);
 			}
 
 			foreach ($this->modules as $module) {
@@ -109,7 +111,7 @@ class phpirc {
 			return;
 		}
 		if ($this->config['server']['echo']) {
-			printf("SEND: %s\n", $data);
+			$this->log->debug("SEND : %s", $data);
 		}
 		$this->_send_data($data);
 	}

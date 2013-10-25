@@ -106,7 +106,7 @@ class module_github extends module {
 		// Expect HTTP POST header
 		$data = socket_read($client, $len, PHP_NORMAL_READ);
 		if ($data == 'POST / HTTP/1.1') {
-			print("GIT: Not POST\n");
+			$this->log->error("Expected POST / HTTP header, got '%s'", $data);
 			socket_close($client);
 			return FALSE;
 		}
@@ -130,14 +130,14 @@ class module_github extends module {
 		}
 
 		if (!isset($headers["Content-Length"])) {
-			print("GIT: Missing content length\n");
+			$this->log->error("Missing content length from HTTP headers");
 			socket_close($client);
 			return FALSE;
 		}
 
 		$payload = "";
 		$bytes = socket_recv($client, $payload, $headers['Content-Length'] + 1, MSG_WAITALL);
-		printf("GIT: Got %d bytes, expected %d: %s\n"
+		$this->log->debug("Got %d bytes, expected %d: %s"
 			, $bytes
 			, $headers['Content-Length'] + 1
 			, $payload
@@ -150,7 +150,7 @@ class module_github extends module {
 		// Get payload
 		list($key,$payload) = explode('=', $payload, 2);
 		if (trim($key) != 'payload') {
-			printf("GIT: Expected key to be payload, got '%s'\n", $key);
+			$this->log->debug("GIT: Expected key to be payload, got '%s'", $key);
 		}
 
 		// Return payload

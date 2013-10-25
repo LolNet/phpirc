@@ -9,6 +9,7 @@ abstract class module {
 	protected $parent;				/** Parent phpirc object */
 	private $event;					/** Event manager */
 	private $timer;					/** Timer manager */
+	protected $log;
 	public $config;
 
 	/**
@@ -17,8 +18,9 @@ abstract class module {
 	 * @param phpirc $parent				Parent instance
 	 */
 	public function __construct(phpirc $parent) {
+		$this->log = new log(get_class($this));
 		if (!is_null($parent->module(get_class($this)))) {
-			printf("ERR: Module '%s' already loaded\n", get_class($this));
+			$this->log->error("Module '%s' already loaded", get_class($this));
 			return FALSE;
 		}
 
@@ -34,7 +36,7 @@ abstract class module {
 			$this->config = [];
 		}
 
-		printf("INFO: Module '%s' loaded\n", get_class($this));
+		$this->log->info("Module '%s' loaded", get_class($this));
 	}
 
 	/**
