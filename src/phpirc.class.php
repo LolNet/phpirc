@@ -47,11 +47,14 @@ class phpirc {
         socket_set_nonblock($this->sock);
     }
 
+    public function __destruct() {
+        $this->send(irc::QUIT("I'm out!"));
+        socket_close($this->sock);
+    }
+
     public function process() {
         if ($data = $this->recv_data()) {
-            if (isset($this->config['server']['echo']) && $this->config['server']['echo'] === TRUE) {
-                $this->log->debug("RECV : %s", $data);
-            }
+           $this->log->debug("RECV : %s", $data);
 
             foreach ($this->modules as $module) {
                 $module->process($data);
@@ -110,9 +113,7 @@ class phpirc {
         if (strstr($data, "\r\n") !== FALSE) {
             return;
         }
-        if ($this->config['server']['echo']) {
-            $this->log->debug("SEND : %s", $data);
-        }
+        $this->log->debug("SEND : %s", $data);
         $this->_send_data($data);
     }
 
