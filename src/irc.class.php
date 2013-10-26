@@ -217,6 +217,12 @@ final class irc {
         return sprintf('PART %s :%s', $channel, $message);
     }
 
+    public static function QUIT($message) {
+        return sprintf('QUIT :%s'
+            , $message
+        );
+    }
+
     public static function MODE($channel, $modes, $modeparam) {
         if (is_array($modes)) {
             $modes = implode('', $modes);
