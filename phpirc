@@ -3,8 +3,8 @@
 error_reporting(E_ALL);
 
 set_include_path(get_include_path() . PATH_SEPARATOR
-	. __DIR__ . '/src/' . PATH_SEPARATOR
-	. __DIR__ . '/lib/' . PATH_SEPARATOR
+    . __DIR__ . '/src/' . PATH_SEPARATOR
+    . __DIR__ . '/lib/' . PATH_SEPARATOR
 );
 
 spl_autoload_register(function($class_name) {
@@ -15,18 +15,18 @@ $log = new log('main');
 
 
 if (PHP_SAPI != 'cli') {
-	$log->critical("Be wise, use command line");
-	exit(1);
+    $log->critical("Be wise, use command line");
+    exit(1);
 }
 
 if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50500) {
-	$log->critical("Need PHP 5.5, current version is %s", PHP_VERSION);
-	exit(1);
+    $log->critical("Need PHP 5.5, current version is %s", PHP_VERSION);
+    exit(1);
 }
 
 $options_short = "";
 $options_long = array(
-	"config:",
+    "config:",
 );
 $options = getopt($options_short, $options_long);
 
@@ -43,23 +43,23 @@ printf("
 
 @include(!empty($options['config']) ? $options['config'] : 'config.php');
 if (!isset($config)) {
-	$log->critical("Config missing, read the README");
-	exit(1);
+    $log->critical("Config missing, read the README");
+    exit(1);
 }
 
 while (TRUE) {
-	$irc = new phpirc($config);
-	$tick = 100;
-	while (TRUE) {
-		usleep($tick);
+    $irc = new phpirc($config);
+    $tick = 100;
+    while (TRUE) {
+        usleep($tick);
 
-		try {
-			$irc->process();
-		} catch (Exception $e) {
-			$log->error("ERR: IRC connector process exception: %s", $e->getMessage());
-			break;
-		}
-	}
-	$log->warning("Unexpected crash D: Reconnecting in 10 sec");
-	sleep(10);
+        try {
+            $irc->process();
+        } catch (Exception $e) {
+            $log->error("ERR: IRC connector process exception: %s", $e->getMessage());
+            break;
+        }
+    }
+    $log->warning("Unexpected crash D: Reconnecting in 10 sec");
+    sleep(10);
 }
