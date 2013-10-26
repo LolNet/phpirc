@@ -82,7 +82,7 @@ abstract class module {
      *
      * @return module                       Return module, or NULL if it isn't loaded
      */
-    final private function module($module_name) {
+    final protected function module($module_name) {
         return $this->parent->module($module_name);
     }
 
