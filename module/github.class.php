@@ -13,6 +13,10 @@ class module_github extends module {
         $this->config = array_merge([
             'ip'                    => '0.0.0.0',   // Listen on given interface
             'port'                  => '8080',      // Listen on given port
+            'allow'                 => [            // Allowed IP addresses
+                '204.232.175.64/27',
+                '192.30.252.0/22',
+            ],
             'max_push_messages'     => 5,           // Max messages per push
             'repository'            => [
                 '_default'              => [
@@ -100,6 +104,23 @@ class module_github extends module {
             return FALSE;
         }
 
+        // Access check
+        $ip = NULL;
+        socket_getpeername($client, $ip);
+        $pass = FALSE;
+        foreach ($this->config['allow'] as $cidr) {
+            if ($this->cidr_within($cidr, $ip)) {
+                $pass = TRUE;
+                break;
+            }
+        }
+        if (!$pass) {
+            $this->log->debug("Connected client not allowed: %s", $ip);
+            socket_write($client, "I don't know you :/ Goodbye...");
+            socket_close($client);
+            return FALSE;
+        }
+
         // Max recv bytes
         $len = 1024;
 
@@ -155,5 +176,20 @@ class module_github extends module {
 
         // Return payload
         return json_decode(urldecode($payload));
+    }
+
+    /**
+     * Check if IP is within given CIDR range
+     *
+     * @param $cidr                 CIDR range
+     * @param $ip                   IP to check
+     */
+    private function cidr_within($cidr, $ip) {
+        $ip_long = ip2long($ip);
+        list($cidr_ip, $cidr_block) = explode('/', $cidr);
+        $cidr_range = pow(2, (32-$cidr_block));
+        $cidr_ip_from = ip2long($cidr_ip);
+        $cidr_ip_to = $cidr_ip_from + $cidr_range - 1;
+        return $cidr_ip_from < $ip_long && $ip_long < $cidr_ip_to;
     }
 }
