@@ -13,7 +13,6 @@ spl_autoload_register(function($class_name) {
 
 $log = new log('main');
 
-
 if (PHP_SAPI != 'cli') {
     $log->critical("Be wise, use command line");
     exit(1);
@@ -43,10 +42,15 @@ printf("
 
 @include(!empty($options['config']) ? $options['config'] : 'config.php');
 if (!isset($config)) {
-    $log->critical("Config missing, read the README");
-    exit(1);
+    $log->critical("Config missing!");
+    $config = new config();
+    $config->create();
+    $config->save(!empty($options['config']) ? $options['config'] : 'config.php');
+} else {
+    $config = new config($config);
 }
 
+die;
 while (TRUE) {
     $irc = new phpirc($config);
     $tick = 100;

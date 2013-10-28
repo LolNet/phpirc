@@ -25,31 +25,27 @@ class phpirc {
      *  @li string $realname                    Client real name
      *  @li bool $echo                          Echo all traffic
      */
-    public function __construct($config) {
+    public function __construct(config $config) {
         $this->log = new log('phpirc');
         $this->log->info("phpirc started");
         $this->config = $config;
 
-        foreach ($config['module'] as $module_name => $conf) {
-            if ($conf === FALSE) {
-                continue;
+        foreach (glob('module/*') as $module_filepath) {
+            $module_filename = pathinfo($module_filepath, PATHINFO_FILENAME);
+            list($module_name,) = explode('.', $module_filename, 2);
+            if ($config->get("module.$module_name", FALSE)) {
+                $this->module_register($module_name);
             }
-            $this->module_register($module_name);
         }
 
         $this->sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        socket_connect($this->sock, $config['server']['host'], $config['server']['port']);
-        if (!empty($this->config['server']['pass'])) {
-            $this->_send_data(irc::PASS($config['server']['pass']));
+        socket_connect($this->sock, $config->get('server.host'), $config->get('server.port'));
+        if ($config->get('server.pass')) {
+            $this->_send_data(irc::PASS($config->get('server.pass')));
         }
-        $this->send(irc::NICK($config['server']['nick']));
-        $this->send(irc::USER($config['server']['user'], 0, '*', ($config['server']['real'] ?: $config['server']['nick'])));
+        $this->send(irc::NICK($config->get('server.nick')));
+        $this->send(irc::USER($config->get('server.user'), 0, '*', $config->get('server.real', $config->get('server.nick'))));
         socket_set_nonblock($this->sock);
-    }
-
-    public function __destruct() {
-        $this->send(irc::QUIT("I'm out!"));
-        socket_close($this->sock);
     }
 
     public function process() {

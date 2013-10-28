@@ -6,6 +6,29 @@
  */
 
 class module_autojoin extends module {
+    use trait_config;
+
+    /**
+     * Config fields
+     */
+    static public function config_fields() {
+        return [
+            'channels'      => [
+                'name'          => 'Channels to join',
+                'type'          => config::FIELD_ARRAY,
+                'validate'      => [
+                    function($value) {
+                        if ($value[0] != '#') {
+                            return 'Invalid channel name';
+                        }
+
+                        return TRUE;
+                    }
+                ],
+            ],
+        ];
+    }
+
     public function init() {
         // Wait for RPL_WELCOME from IRC server
         $this->event(irc::RPL_WELCOME, function($data) {
@@ -16,14 +39,10 @@ class module_autojoin extends module {
     }
 
     public function join() {
-        if (!empty($this->config)) {
-            if (is_array($this->config)) {
-                $channels = $this->config;
-            } else {
-                $channels = [$this->config];
-            }
+        $channels = $this->config->get('module.autojoin.channels');
+        if (!empty($channels)) {
             $this->parent()->send(irc::JOIN($channels));
-        } else{
+        } else {
             $this->log->error("No channel/s defined");
         }
     }
