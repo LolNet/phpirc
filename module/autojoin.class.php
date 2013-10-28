@@ -6,8 +6,6 @@
  */
 
 class module_autojoin extends module {
-    use trait_config;
-
     /**
      * Config fields
      */

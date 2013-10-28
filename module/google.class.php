@@ -6,6 +6,17 @@
  */
 
 class module_google extends module {
+    use trait_config;
+
+    static public function config_fields() {
+        return [
+            'api-key'       => [
+                'name'          => 'Google API key',
+                'type'          => config::FIELD_STRING,
+            ],
+        ];
+    }
+
     public function init() {
         $this->module('fantasy')->register(['g', 'google'], function($data) {
             // Check for arguments presence

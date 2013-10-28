@@ -50,7 +50,6 @@ if (!isset($config)) {
     $config = new config($config);
 }
 
-die;
 while (TRUE) {
     $irc = new phpirc($config);
     $tick = 100;

@@ -27,14 +27,10 @@ abstract class module {
         $this->parent = $parent;
         $this->event = new event($this);
         $this->timer = new timer($this);
+        $this->config = $parent->config();
 
         $module_name = explode('_', get_class($this), 2);
         $module_name = array_pop($module_name);
-        if (isset($this->parent->config['module'][$module_name])) {
-            $this->config = $this->parent->config['module'][$module_name];
-        } else {
-            $this->config = [];
-        }
 
         $this->log->info("Module '%s' loaded", get_class($this));
     }

@@ -6,8 +6,6 @@
  */
 
 class config {
-    use trait_config;
-
     private $config = [];
 
     const FIELD_INT = 'field_int';
@@ -41,7 +39,7 @@ class config {
             }
 
             // Check if module has config values
-            if (in_array('trait_config', class_uses($module_class_name))) {
+            if (is_callable("$module_class_name::config_fields")) {
                 $this->parse_fields($module_class_name::config_fields(), "module.$module_name.");
             }
         }

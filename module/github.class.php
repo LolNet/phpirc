@@ -8,23 +8,40 @@
 class module_github extends module {
     private $socket;
 
-    public function init() {
-        // Merge default and user config
-        $this->config = array_merge([
-            'ip'                    => '0.0.0.0',   // Listen on given interface
-            'port'                  => '8080',      // Listen on given port
-            'allow'                 => [            // Allowed IP addresses
-                '204.232.175.64/27',
-                '192.30.252.0/22',
+    static public function config_fields() {
+        return [
+            'ip'                    => [
+                'name'                  => 'Listen ip',
+                'type'                  => config::FIELD_STRING,
+                'default'               => '0.0.0.0',
             ],
-            'max_push_messages'     => 5,           // Max messages per push
-            'repository'            => [
-                '_default'              => [
-                    'channel'               => '#spam',
+            'port'                  => [
+                'name'                  => 'Listen port',
+                'type'                  => cofnig::FIELD_INT,
+                'default'               => 8080,
+            ],
+            'allow'                 => [
+                'name'                  => 'CIDR ranges to allow'
+                'type'                  => config::FIELD_ARRAY,
+                'default'               => [
+                    '204.232.175.64/27',
+                    '192.30.252.0/22',
                 ],
             ],
-        ], $this->config);
+            'max_pish_messages'     => [
+                'name'                  => 'Max messages per push',
+                'type'                  => config::FIELD_INT,
+                'default'               => 5,
+            ],
+            'repository._default'   => [
+                'name'                  => 'Echo channel',
+                'type'                  => config::FIELD_STRING,
+                'default'               => '#spam',
+            ],
+        ];
+    }
 
+    public function init() {
         $this->socket = $this->setup_socket();
         $this->timer(1, [$this, 'tick']);
     }
@@ -39,7 +56,7 @@ class module_github extends module {
             throw new Exception("Unable to create socket");
         }
 
-        if (!socket_bind($socket, $this->config['ip'], $this->config['port'])) {
+        if (!socket_bind($socket, $this->config->get('module.github.ip'), $this->config->get('module.github.port'))) {
             throw new Exception("Unable to bind socket");
         }
 
@@ -64,9 +81,7 @@ class module_github extends module {
             return;
         }
 
-        $config = isset($this->config['repositories'][$payload->repository->name])
-            ? $this->config['repositories'][$payload->repository->name]
-            : $this->config['repositories']['_default'];
+        $channel = $this->config->get('module.github.repository._default');
 
         $msg = sprintf("[GIT] %s pushed %d commits to %s [%s]"
             , $payload->pusher->name
@@ -74,7 +89,7 @@ class module_github extends module {
             , $payload->repository->name
             , $payload->compare
         );
-        $this->parent()->send(irc::PRIVMSG($config['channel'], $msg));
+        $this->parent()->send(irc::PRIVMSG($channel, $msg));
 
         $count = 0;
         foreach ($payload->commits as $commit) {
@@ -84,10 +99,10 @@ class module_github extends module {
                 , $commit->url
             );
 
-            $this->parent()->send(irc::PRIVMSG($config['channel'], $msg));
+            $this->parent()->send(irc::PRIVMSG($channel, $msg));
 
             // Break on max push messages
-            if ($count++ >= $this->config['max_push_messages']) {
+            if ($count++ >= $this->config->get('module.github.max_push_messages')) {
                 break;
             }
         }
@@ -108,7 +123,7 @@ class module_github extends module {
         $ip = NULL;
         socket_getpeername($client, $ip);
         $pass = FALSE;
-        foreach ($this->config['allow'] as $cidr) {
+        foreach ($this->config->get('module.github.allow') as $cidr) {
             if ($this->cidr_within($cidr, $ip)) {
                 $pass = TRUE;
                 break;
